@@ -1,0 +1,6 @@
+.env
+profile.md
+data/
+__pycache__/
+*.pyc
+.venv/
