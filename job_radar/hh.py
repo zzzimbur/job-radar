@@ -53,7 +53,10 @@ def search(query: str, area: int = 113, per_page: int = 50, pages: int = 2) -> l
     """Поиск вакансий. area=113 – вся Россия."""
     out: list[dict] = []
     timeout = httpx.Timeout(connect=15, read=90, write=15, pool=15)
-    with httpx.Client(headers=HEADERS, timeout=timeout, follow_redirects=True) as client:
+    # trust_env=False – hh.ru доступен напрямую, а системный прокси (VPN/WARP)
+    # часто рвёт TLS на российских сайтах
+    with httpx.Client(headers=HEADERS, timeout=timeout, follow_redirects=True,
+                      trust_env=False) as client:
         for page in range(pages):
             params = {"text": query, "area": area, "per_page": per_page,
                       "page": page, "search_period": 30}
@@ -107,7 +110,8 @@ def _normalize(v: dict) -> dict:
 
 def fetch_description(vacancy_id: str) -> str:
     """Текст описания со страницы вакансии."""
-    with httpx.Client(headers=HEADERS, timeout=30, follow_redirects=True) as client:
+    with httpx.Client(headers=HEADERS, timeout=30, follow_redirects=True,
+                      trust_env=False) as client:
         r = client.get(VACANCY_URL.format(vacancy_id))
         if r.status_code != 200:
             return ""
